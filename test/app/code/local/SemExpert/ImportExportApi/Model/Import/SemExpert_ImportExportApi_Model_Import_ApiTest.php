@@ -84,6 +84,16 @@ class SemExpert_ImportExportApi_Model_Import_ApiTest extends PHPUnit_Framework_T
             $this->fail($e->getMessage());
         }
     }
+    /**
+     * @covers SemExpert_ImportExportApi_Model_Import_Api::validate
+     * @expectedException Mage_Api_Exception
+     */
+    public function testValidateFailed() {
+        $file = new stdClass();
+        $file->mime = "";
+        $file->content = "";
+        $this->object->validate($file);
+    }
 
     /**
      * @covers SemExpert_ImportExportApi_Model_Import_Api::start
