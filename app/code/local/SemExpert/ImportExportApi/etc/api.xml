@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <api>
+
+        <resources>
+            <importexport_import translate="title" module="importexportapi">
+
+                <model>importexportapi/import_api</model>
+                <title>Import API</title>
+                <acl>importexport/import</acl>
+
+                <methods>
+
+                    <validate translate="title" module="importexportapi">
+                        <title>Import First Step - Data validation</title>
+                        <acl>importexport/import</acl>
+                    </validate>
+
+                    <start translate="title" module="importexportapi">
+                        <title>Import Second Step - Run import</title>
+                        <acl>importexport/import</acl>
+                    </start>
+
+                </methods>
+
+                <faults module="importexportapi">
+                    <data_invalid>
+                        <code>100</code>
+                        <message>Invalid data given. Details in error message.</message>
+                    </data_invalid>
+                </faults>
+
+            </importexport_import>
+        </resources>
+
+        <resources_alias>
+            <import>importexport_import</import>
+        </resources_alias>
+
+        <v2>
+            <resources_function_prefix>
+                <import>importexportImport</import>
+            </resources_function_prefix>
+        </v2>
+
+        <acl>
+            <resources>
+                <importexport translate="title" module="importexportapi">
+
+                    <title>Import/Export</title>
+
+                    <import translate="title" module="importexportapi">
+                        <title>Import</title>
+                    </import>
+
+                </importexport>
+            </resources>
+        </acl>
+
+    </api>
+</config>

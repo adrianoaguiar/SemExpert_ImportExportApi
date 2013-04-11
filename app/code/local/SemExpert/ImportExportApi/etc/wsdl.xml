@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+    <types>
+        <schema>
+
+            <complexType name="importexportImportFileEntity">
+                <all>
+                    <element name="content" type="xsd:string" />
+                    <element name="mime" type="xsd:string" />
+                    <element name="encoding" type="xsd:string" minOccurs="0" />
+                </all>
+            </complexType>
+
+            <complexType name="importexportImportValidateResult">
+                <all>
+                    <element name="status" type="xsd:int" />
+                    <element name="messages" type="typens:ArrayOfString" />
+                    <element name="processed_rows_count" type="xsd:int" />
+                    <element name="invalid_rows_count" type="xsd:int" />
+                    <element name="processed_entities_count" type="xsd:int" />
+                    <element name="errors_count" type="xsd:int" />
+                </all>
+            </complexType>
+            
+        </schema>
+    </types>
+
+    <message name="importexportImportValidateRequest">
+        <part name="sessionId" type="xsd:string" />
+        <part name="file" type="typens:importexportImportFileEntity" />
+    </message>
+
+    <message name="importexportImportValidateResponse">
+        <part name="result" type="typens:importexportImportValidateResult" />
+    </message>
+
+    <message name="importexportImportStartRequest">
+        <part name="sessionId" type="xsd:string" />
+    </message>
+
+    <message name="importexportImportStartResponse">
+        <part name="result" type="typens:ArrayOfString" />
+    </message>
+
+    <portType name="{{var wsdl.handler}}PortType">
+
+        <operation name="importexportImportValidate">
+            <documentation>Validate data for import</documentation>
+            <input message="typens:importexportImportValidateRequest" />
+            <output message="typens:importexportImportValidateResponse" />
+        </operation>
+
+        <operation name="importexportImportStart">
+            <documentation>Start import</documentation>
+            <input message="typens:importexportImportStartRequest" />
+            <output message="typens:importexportImportStartResponse" />
+        </operation>
+     </portType>
+
+    <binding name="{{var wsdl.handler}}Binding" type="typens:{{var wsdl.handler}}PortType">
+
+        <operation name="importexportImportValidate">
+
+            <soap:operation soapAction="urn:{{var wsdl.handler}}Action" />
+
+            <input>
+                <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+            </input>
+
+            <output>
+                <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+            </output>
+
+        </operation>
+
+        <operation name="importexportImportStart">
+
+            <soap:operation soapAction="urn:{{var wsdl.handler}}Action" />
+
+            <input>
+                <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+            </input>
+
+            <output>
+                <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+            </output>
+
+        </operation>
+
+    </binding>
+</definitions>
