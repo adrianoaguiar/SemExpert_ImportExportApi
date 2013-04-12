@@ -11,10 +11,8 @@ extends Mage_Api_Model_Resource_Abstract
     const STATUS_PARTIAL = 1;
     const STATUS_VALID = 2;
 
-    public function validate($file)
+    public function validate($file, $entity, $behavior)
     {
-        $entity = 'catalog_product';
-        $behavior = 'append';
 
         $data = array(
             'entity'   => $entity, // catalog_product | customer
@@ -81,6 +79,7 @@ extends Mage_Api_Model_Resource_Abstract
         } catch (Mage_Api_Exception $e) {
             throw $e;
         } catch (Exception $e) {
+            Mage::logException($e);
             $this->_fault('unknown');
         }
 
@@ -95,22 +94,39 @@ extends Mage_Api_Model_Resource_Abstract
         return $response;
     }
 
-    public function start()
+    public function start($entity, $behavior)
     {
-        return array('Hello', 'world!');
+        /* @var $importModel Mage_ImportExport_Model_Import */
+        $importModel = Mage::getModel('importexport/import');
+
+        try {
+            $importModel->importSource();
+            $importModel->invalidateIndex();
+            return true;
+        } catch (Magento_Api_Exception $e) {
+            throw $e;
+        } catch (Exception $e) {
+            Mage::logException($e);
+            $this->_fault('unknown');
+        }
     }
 
+    /**
+     * Process file data and generate local file to import
+     *
+     * @param Mage_ImportExport_Model_Import $import
+     * @param object $file
+     * @return string
+     */
     private function _uploadSource($import, $file)
     {
         $entity = $import->getEntity();
 
         if (!$file || !$file->mime || !$file->content) { // Validate parameters
-            /* TODO el mensaje no se esta transmitiendo correctamente */
             $this->_fault('data_invalid', Mage::helper('importexportapi')->__('The file is not specified.'));
         }
 
         if (!isset($this->_mimeTypes[$file->mime])) { // Validate mime type
-            /* TODO el mensaje no se esta transmitiendo correctamente */
             $this->_fault('data_invalid', Mage::helper('importexportapi')->__('Invalid file type.'));
         }
 

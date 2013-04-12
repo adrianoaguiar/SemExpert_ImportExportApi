@@ -22,13 +22,15 @@
                     <element name="errors_count" type="xsd:int" />
                 </all>
             </complexType>
-            
+
         </schema>
     </types>
 
     <message name="importexportImportValidateRequest">
         <part name="sessionId" type="xsd:string" />
         <part name="file" type="typens:importexportImportFileEntity" />
+        <part name="entity" type="xsd:string" />
+        <part name="behavior" type="xsd:string" />
     </message>
 
     <message name="importexportImportValidateResponse">
@@ -37,10 +39,12 @@
 
     <message name="importexportImportStartRequest">
         <part name="sessionId" type="xsd:string" />
+        <part name="entity" type="xsd:string" />
+        <part name="behavior" type="xsd:string" />
     </message>
 
     <message name="importexportImportStartResponse">
-        <part name="result" type="typens:ArrayOfString" />
+        <part name="result" type="xsd:boolean" />
     </message>
 
     <portType name="{{var wsdl.handler}}PortType">

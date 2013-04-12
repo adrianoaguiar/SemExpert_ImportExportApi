@@ -11,26 +11,30 @@ class SemExpert_ImportExportApi_Model_Import_ApiTest extends PHPUnit_Framework_T
     protected $object;
 
     /**
+     * Uniqid created for avoiding name collissions
+     *
+     * @var string
+     */
+    protected static $id;
+
+    /**
+     * Valid CSV file contents
+     *
+     * @var string
+     */
+    protected $valid_file;
+
+    public static function setUpBeforeClass()
+    {
+        self::$id = uniqid();
+    }
+
+    /**
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      */
     protected function setUp() {
         $this->object = Mage::getModel('importexportapi/import_api');
-    }
-
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown() {
-
-    }
-
-    /**
-     * @covers SemExpert_ImportExportApi_Model_Import_Api::validate
-     */
-    public function testValidate() {
-        $str = uniqid();
 
         foreach (Mage::getModel('catalog/product')->getResource()->getEntityType()->getAttributeSetCollection() as $set) {
             break;
@@ -58,7 +62,7 @@ class SemExpert_ImportExportApi_Model_Import_ApiTest extends PHPUnit_Framework_T
                 $opt = end($options);
                 $values[] = $opt['value'];
             } else {
-                $values[] = $str;
+                $values[] = self::$id;
             }
         }
 
@@ -68,12 +72,31 @@ class SemExpert_ImportExportApi_Model_Import_ApiTest extends PHPUnit_Framework_T
 
         $content = ob_get_clean();
 
+        $this->valid_file = $content;
+
+    }
+
+    /**
+     * Tears down the fixture, for example, closes a network connection.
+     * This method is called after a test is executed.
+     */
+    protected function tearDown() {
+        if (file_exists(Mage::getBaseDir('var') . '/importexport/catalog_product.csv')) {
+            unlink(Mage::getBaseDir('var') . '/importexport/catalog_product.csv');
+        }
+    }
+
+    /**
+     * @covers SemExpert_ImportExportApi_Model_Import_Api::validate
+     */
+    public function testValidate() {
+
         $file = new stdClass();
-        $file->content = base64_encode($content);
+        $file->content = base64_encode($this->valid_file);
         $file->mime = 'text/csv';
 
         try {
-            $result = $this->object->validate($file);
+            $result = $this->object->validate($file, 'catalog_product', 'append');
             $this->assertEquals(1, $result->processed_rows_count);
             $this->assertEquals(0, $result->invalid_rows_count);
             $this->assertEquals(1, $result->processed_entities_count);
@@ -83,6 +106,7 @@ class SemExpert_ImportExportApi_Model_Import_ApiTest extends PHPUnit_Framework_T
         } catch (Exception $e) {
             $this->fail($e->getMessage());
         }
+
     }
     /**
      * @covers SemExpert_ImportExportApi_Model_Import_Api::validate
@@ -92,18 +116,29 @@ class SemExpert_ImportExportApi_Model_Import_ApiTest extends PHPUnit_Framework_T
         $file = new stdClass();
         $file->mime = "";
         $file->content = "";
-        $this->object->validate($file);
+        $this->assertTrue($this->object->validate($file, 'catalog_product', 'append'));
     }
 
     /**
      * @covers SemExpert_ImportExportApi_Model_Import_Api::start
-     * @todo   Implement testStart().
+     * @depends testValidate
      */
     public function testStart() {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+
+        try {
+            $this->object->start('catalog_product', 'append');
+
+            /* @var $product Mage_Catalog_Model_Product */
+            $product = Mage::getModel('catalog/product')->loadByAttribute('sku', self::$id);
+            $this->assertGreaterThan(0, $product->getId());
+
+            if ($product->getId()) {
+                $product->delete();
+            }
+        } catch (Exception $e) {
+            $this->fail($e->getMessage());
+        }
+
     }
 
 }
