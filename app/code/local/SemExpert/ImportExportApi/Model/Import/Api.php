@@ -7,6 +7,12 @@ extends Mage_Api_Model_Resource_Abstract
         'text/csv' => 'csv'
     );
 
+    private $_encodings = array(
+        'identity' => '',
+//        'gzip' => 'gzuncompress',
+        'gzip' => 'gzdecode',
+    );
+
     const STATUS_INVALID = 0;
     const STATUS_PARTIAL = 1;
     const STATUS_VALID = 2;
@@ -120,6 +126,7 @@ extends Mage_Api_Model_Resource_Abstract
      */
     private function _uploadSource($import, $file)
     {
+Mage::log($file);
         $entity = $import->getEntity();
 
         if (!$file || !$file->mime || !$file->content) { // Validate parameters
@@ -130,6 +137,14 @@ extends Mage_Api_Model_Resource_Abstract
             $this->_fault('data_invalid', Mage::helper('importexportapi')->__('Invalid file type.'));
         }
 
+        if (!isset($file->encoding)) {
+            $file->encoding = 'identity';
+        }
+
+        if (!isset($this->_encodings[$file->encoding])) {
+            $this->_fault('data_invalid', Mage::helper('importexportapi')->__('Enconding \'%s\' not supported.', $file->encoding));
+        }
+
         $fileContent = @base64_decode($file->content, true); // Decode data in strict base64 alphabet mode
 
         if (!$fileContent) {
@@ -138,12 +153,19 @@ extends Mage_Api_Model_Resource_Abstract
 
         unset($file->content); // Free memory
 
+        if ($this->_encodings[$file->encoding]) {
+             if (!is_callable($this->_encodings[$file->encoding])) {
+                $this->_fault('data_invalid', Mage::helper('importexportapi')->__('Decoder for %s is not available.', $file->encoding));
+             }
+
+             $fileContent = call_user_func($this->_encodings[$file->encoding], $fileContent);
+        }
+
         $tmpDirectory = $import->getWorkingDir();
         $fileName = $entity . '.' . $this->_mimeTypes[$file->mime];
         $ioAdapter = new Varien_Io_File();
 
         try {
-            /* TODO Validate encoding */
 
             // Create temporary directory for api
             $ioAdapter->checkAndCreateFolder($tmpDirectory);

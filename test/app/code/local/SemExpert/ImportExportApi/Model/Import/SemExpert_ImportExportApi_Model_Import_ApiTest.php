@@ -108,6 +108,31 @@ class SemExpert_ImportExportApi_Model_Import_ApiTest extends PHPUnit_Framework_T
         }
 
     }
+
+    /**
+     * @covers SemExpert_ImportExportApi_Model_Import_Api::validate
+     */
+    public function testValidateGzip() {
+
+        $file = new stdClass();
+        $file->content = base64_encode(gzencode($this->valid_file));
+        $file->mime = 'text/csv';
+        $file->encoding = 'gzip';
+
+        try {
+            $result = $this->object->validate($file, 'catalog_product', 'append');
+            $this->assertEquals(1, $result->processed_rows_count);
+            $this->assertEquals(0, $result->invalid_rows_count);
+            $this->assertEquals(1, $result->processed_entities_count);
+            $this->assertEquals(0, $result->errors_count);
+        } catch (Mage_Api_Exception $e) {
+            $this->fail($e->getCustomMessage());
+        } catch (Exception $e) {
+            $this->fail($e->getMessage());
+        }
+
+    }
+
     /**
      * @covers SemExpert_ImportExportApi_Model_Import_Api::validate
      * @expectedException Mage_Api_Exception
